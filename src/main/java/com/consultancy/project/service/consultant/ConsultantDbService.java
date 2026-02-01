@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -45,7 +46,6 @@ public class ConsultantDbService {
         return mappingUtility.mapToDto(saved);
     }
 
-    @Cacheable
     private void validateEmailAndPhoneRecordsExistInDatabase(ConsultantDTO dto) {
         if (consultantRepository.existsByPhone(dto.getPhone())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Record with email " + dto.getEmail() + " already exists");
@@ -53,5 +53,18 @@ public class ConsultantDbService {
         if (consultantRepository.existsByEmail(dto.getPhone())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Record with phone " + dto.getPhone() + " already exists");
         }
+    }
+
+    @Transactional
+    @Cacheable (value = "consultants", key ="#id")
+    public Optional<ConsultantEntity>  findById(Long id) {
+        Optional<ConsultantEntity> byId = null;
+        try{
+            byId = consultantRepository.findById(id);
+        } catch (Exception ex) {
+            log.error("Database error when retrieving consultant by Id {}", id);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error", ex);
+        }
+        return byId;
     }
 }
