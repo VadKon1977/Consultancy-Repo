@@ -1,5 +1,6 @@
 package com.consultancy.project.service.consultant;
 
+import com.consultancy.project.DAO.ConsultantEntity;
 import com.consultancy.project.DTO.ConsultantDTO;
 import com.consultancy.project.util.PayloadValidator;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -34,7 +36,15 @@ public class ConsultantService {
     }
 
     public ConsultantDTO findById(Long id) {
-        return null;
+        ConsultantDTO dto;
+        if (id > 0){
+            dto = consultantDbService.findById(id).map(this::convertToConsultantDTO)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultant id {} not found in Database"));
+        } else {
+            log.error("Id must be value greater than 0 {}", id);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id must be value greater than 0");
+        }
+        return dto;
     }
 
     public List<ConsultantDTO> findAll() {
@@ -50,5 +60,18 @@ public class ConsultantService {
 
     public ConsultantDTO patch(Long id, ConsultantDTO patchDto) {
         return null;
+    }
+
+    private ConsultantDTO convertToConsultantDTO(ConsultantEntity entity) {
+        ConsultantDTO consultantDTO = null;
+        consultantDTO = new ConsultantDTO();
+        consultantDTO.setId(entity.getId());
+        consultantDTO.setEmail(entity.getEmail());
+        consultantDTO.setPhone(entity.getPhone());
+        consultantDTO.setSpecialization(entity.getSpecialization());
+        consultantDTO.setFirstName(entity.getFirstName());
+        consultantDTO.setSecondName(entity.getSecondName());
+        consultantDTO.setExperienceYears(entity.getExperienceYears());
+        return consultantDTO;
     }
 }
