@@ -1,0 +1,5 @@
+ docker-compose up --build - run docker-compose file
+
+ docker-compose restart app restart container without build
+
+

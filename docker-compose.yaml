@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    container_name: spring-consultancy-app
+    ports:
+      - "8081:8081"
+    environment:
+      # redirect localhost to service in Docker
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      # H2 settings
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:consultancy_db;DB_CLOSE_DELAY=-1
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=test
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    restart: always

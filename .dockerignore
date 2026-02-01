@@ -1,0 +1,23 @@
+# Build and artefacts
+target/
+build/
+out/
+
+# local IDE settings
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Maven/Gradle
+.mvn/
+mvnw
+mvnw.cmd
+.gradle/
+
+# logs and temp files
+*.log
+.git/
+.gitignore
+
