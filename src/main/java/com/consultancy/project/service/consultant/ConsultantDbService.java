@@ -67,6 +67,7 @@ public class ConsultantDbService implements IConsultantDbService {
     }
 
     @Override
+    @Transactional
     public List<ConsultantEntity> findAll() {
         log.info("[TracingId {}] Retrieving All Consultants at ", MDC.get(Constants.TRACE_ID_KEY));
         List<ConsultantEntity> all;
