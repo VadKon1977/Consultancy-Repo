@@ -6,31 +6,27 @@ import com.consultancy.project.repository.ConsultantRepository;
 import com.consultancy.project.util.Constants;
 import com.consultancy.project.util.ConsultantMapper;
 import com.consultancy.project.util.JsonUtility;
-import com.consultancy.project.util.MappingUtility;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-@Component
+@Service
 @Slf4j
-public class ConsultantDbService {
+@AllArgsConstructor
+public class ConsultantDbService implements IConsultantDbService {
 
     private final ConsultantRepository consultantRepository;
     private final JsonUtility jsonUtility;
     private final ConsultantMapper consultantMapper;
 
-    public ConsultantDbService(ConsultantRepository consultantRepository, JsonUtility jsonUtility, MappingUtility mappingUtility, ConsultantMapper consultantMapper) {
-        this.consultantRepository = consultantRepository;
-        this.jsonUtility = jsonUtility;
-        this.consultantMapper = consultantMapper;
-    }
-
+    @Override
     @Transactional
     public ConsultantDTO save(ConsultantDTO dto) {
         ConsultantEntity saved;
@@ -54,6 +50,7 @@ public class ConsultantDbService {
         }
     }
 
+    @Override
     @Transactional
     @Cacheable (value = "consultants", key ="#id")
     public Optional<ConsultantEntity>  findById(Long id) {

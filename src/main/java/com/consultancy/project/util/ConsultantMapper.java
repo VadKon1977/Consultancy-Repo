@@ -7,8 +7,6 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ConsultantMapper {
-
     ConsultantDTO toDto(ConsultantEntity consultantEntity);
-
     ConsultantEntity toEntity(ConsultantDTO consultantDTO);
 }
