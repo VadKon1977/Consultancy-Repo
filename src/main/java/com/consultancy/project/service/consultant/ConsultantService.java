@@ -2,17 +2,19 @@ package com.consultancy.project.service.consultant;
 
 import com.consultancy.project.DAO.ConsultantEntity;
 import com.consultancy.project.DTO.ConsultantDTO;
+import com.consultancy.project.util.Constants;
 import com.consultancy.project.util.ConsultantMapper;
-import com.consultancy.project.util.MappingUtility;
 import com.consultancy.project.util.PayloadValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+
 
 
 @Service
@@ -30,7 +32,7 @@ public class ConsultantService implements IConsultantService{
        if (payloadValidator.consultantValidator(dto)) {
           saved  = consultantDbService.save(dto);
           if (null == saved) {
-              throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Consultant has not been saved " + LocalDateTime.now());
+              throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Consultant has not been saved ");
           }
        }
         return saved;
@@ -51,7 +53,23 @@ public class ConsultantService implements IConsultantService{
 
     @Override
     public List<ConsultantDTO> findAll() {
-        return null;
+        log.info("Fetching all consultants");
+        List<ConsultantEntity> allConsultants = consultantDbService.findAll();
+        if (allConsultants.isEmpty()) {
+            log.error("Consultants are not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultants not found");
+        }
+
+        return allConsultants.stream().filter(Objects::nonNull).map(a -> {
+            ConsultantDTO dto;
+            try {
+                dto = consultantMapper.toDto(a);
+            } catch (Exception ex) {
+                log.error("Mapping all consultants error ", ex);
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Mapping all consultants error ", ex);
+            }
+            return dto;
+        }).toList();
     }
 
     @Override
