@@ -9,12 +9,14 @@ import com.consultancy.project.util.JsonUtility;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,7 +47,7 @@ public class ConsultantDbService implements IConsultantDbService {
         if (consultantRepository.existsByPhone(dto.getPhone())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Record with email " + dto.getEmail() + " already exists");
         }
-        if (consultantRepository.existsByEmail(dto.getPhone())) {
+        if (consultantRepository.existsByEmail(dto.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Record with phone " + dto.getPhone() + " already exists");
         }
     }
@@ -62,5 +64,18 @@ public class ConsultantDbService implements IConsultantDbService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error", ex);
         }
         return byId;
+    }
+
+    @Override
+    public List<ConsultantEntity> findAll() {
+        log.info("[TracingId {}] Retrieving All Consultants at ", MDC.get(Constants.TRACE_ID_KEY));
+        List<ConsultantEntity> all;
+        try {
+            all = consultantRepository.findAll();
+        } catch (Exception ex) {
+            log.error("Database error when retrieving consultant by Id");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error", ex);
+        }
+        return all;
     }
 }
