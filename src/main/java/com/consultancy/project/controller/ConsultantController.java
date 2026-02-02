@@ -5,6 +5,7 @@ import com.consultancy.project.DTO.ConsultantDTO;
 import com.consultancy.project.util.Constants;
 import com.consultancy.project.util.JsonUtility;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +18,12 @@ import java.util.Optional;
 @RestController
 @Slf4j// Lombok generates: private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ConsultantController.class);
 @RequestMapping("/v1/consultant")
+@RequiredArgsConstructor
+
 public class ConsultantController {
 
     private final ConsultantService consultantService;
     private final JsonUtility jsonUtility;
-
-    public  ConsultantController(ConsultantService consultantService, JsonUtility jsonUtility) {
-        this.consultantService = consultantService;
-        this.jsonUtility = jsonUtility;
-    }
 
     @PostMapping("/consultants")
     public ResponseEntity<ConsultantDTO> create(@Valid @RequestBody ConsultantDTO dto) {

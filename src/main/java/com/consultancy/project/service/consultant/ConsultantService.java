@@ -5,6 +5,7 @@ import com.consultancy.project.DTO.ConsultantDTO;
 import com.consultancy.project.util.ConsultantMapper;
 import com.consultancy.project.util.MappingUtility;
 import com.consultancy.project.util.PayloadValidator;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,19 +17,14 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class ConsultantService {
+@AllArgsConstructor
+public class ConsultantService implements IConsultantService{
 
     private final PayloadValidator payloadValidator;
     private final ConsultantDbService consultantDbService;
     private final ConsultantMapper consultantMapper;
 
-    public ConsultantService(PayloadValidator payloadValidator, ConsultantDbService consultantDbService, MappingUtility mappingUtility,
-                             ConsultantMapper consultantMapper) {
-        this.payloadValidator = payloadValidator;
-        this.consultantDbService = consultantDbService;
-        this.consultantMapper = consultantMapper;
-    }
-
+    @Override
     public ConsultantDTO save(ConsultantDTO dto) {
         ConsultantDTO saved = null;
        if (payloadValidator.consultantValidator(dto)) {
@@ -40,6 +36,7 @@ public class ConsultantService {
         return saved;
     }
 
+    @Override
     public ConsultantDTO findById(Long id) {
         ConsultantDTO dto;
         if (id > 0){
@@ -52,31 +49,22 @@ public class ConsultantService {
         return dto;
     }
 
+    @Override
     public List<ConsultantDTO> findAll() {
         return null;
     }
 
+    @Override
     public ConsultantDTO update(Long id, ConsultantDTO consultantDTO) {
         return null;
     }
 
+    @Override
     public void delete(Long id) {
     }
 
+    @Override
     public ConsultantDTO patch(Long id, ConsultantDTO patchDto) {
         return null;
-    }
-
-    private ConsultantDTO convertToConsultantDTO(ConsultantEntity entity) {
-        ConsultantDTO consultantDTO = null;
-        consultantDTO = new ConsultantDTO();
-        consultantDTO.setId(entity.getId());
-        consultantDTO.setEmail(entity.getEmail());
-        consultantDTO.setPhone(entity.getPhone());
-        consultantDTO.setSpecialization(entity.getSpecialization());
-        consultantDTO.setFirstName(entity.getFirstName());
-        consultantDTO.setSecondName(entity.getSecondName());
-        consultantDTO.setExperienceYears(entity.getExperienceYears());
-        return consultantDTO;
     }
 }
