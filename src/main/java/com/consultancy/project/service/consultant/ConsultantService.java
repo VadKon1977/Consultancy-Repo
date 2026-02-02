@@ -2,6 +2,8 @@ package com.consultancy.project.service.consultant;
 
 import com.consultancy.project.DAO.ConsultantEntity;
 import com.consultancy.project.DTO.ConsultantDTO;
+import com.consultancy.project.util.ConsultantMapper;
+import com.consultancy.project.util.MappingUtility;
 import com.consultancy.project.util.PayloadValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -19,9 +20,13 @@ public class ConsultantService {
 
     private final PayloadValidator payloadValidator;
     private final ConsultantDbService consultantDbService;
-    public ConsultantService(PayloadValidator payloadValidator,  ConsultantDbService consultantDbService) {
+    private final ConsultantMapper consultantMapper;
+
+    public ConsultantService(PayloadValidator payloadValidator, ConsultantDbService consultantDbService, MappingUtility mappingUtility,
+                             ConsultantMapper consultantMapper) {
         this.payloadValidator = payloadValidator;
         this.consultantDbService = consultantDbService;
+        this.consultantMapper = consultantMapper;
     }
 
     public ConsultantDTO save(ConsultantDTO dto) {
@@ -38,7 +43,7 @@ public class ConsultantService {
     public ConsultantDTO findById(Long id) {
         ConsultantDTO dto;
         if (id > 0){
-            dto = consultantDbService.findById(id).map(this::convertToConsultantDTO)
+            dto = consultantDbService.findById(id).map(consultantMapper::toDto)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultant id {} not found in Database"));
         } else {
             log.error("Id must be value greater than 0 {}", id);

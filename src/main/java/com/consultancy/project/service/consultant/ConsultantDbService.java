@@ -4,11 +4,11 @@ import com.consultancy.project.DTO.ConsultantDTO;
 import com.consultancy.project.DAO.ConsultantEntity;
 import com.consultancy.project.repository.ConsultantRepository;
 import com.consultancy.project.util.Constants;
+import com.consultancy.project.util.ConsultantMapper;
 import com.consultancy.project.util.JsonUtility;
 import com.consultancy.project.util.MappingUtility;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -23,13 +23,12 @@ public class ConsultantDbService {
 
     private final ConsultantRepository consultantRepository;
     private final JsonUtility jsonUtility;
+    private final ConsultantMapper consultantMapper;
 
-    private final MappingUtility mappingUtility;
-
-    public ConsultantDbService(ConsultantRepository consultantRepository, JsonUtility jsonUtility, MappingUtility mappingUtility) {
+    public ConsultantDbService(ConsultantRepository consultantRepository, JsonUtility jsonUtility, MappingUtility mappingUtility, ConsultantMapper consultantMapper) {
         this.consultantRepository = consultantRepository;
         this.jsonUtility = jsonUtility;
-        this.mappingUtility = mappingUtility;
+        this.consultantMapper = consultantMapper;
     }
 
     @Transactional
@@ -38,12 +37,12 @@ public class ConsultantDbService {
         log.info("Saving New Consultant Data {} at {}",jsonUtility.writeToJson(dto, Constants.SAVE_CONSULTANT) , LocalDateTime.now());
         validateEmailAndPhoneRecordsExistInDatabase(dto);
         try {
-            saved = consultantRepository.save(mappingUtility.mapToEntity(dto));
+            saved = consultantRepository.save(consultantMapper.toEntity(dto));
         } catch (Exception ex){
             log.error("Error saving New Consultant Data {} at {}",jsonUtility.writeToJson(dto, Constants.SAVE_CONSULTANT), LocalDateTime.now());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error", ex);
         }
-        return mappingUtility.mapToDto(saved);
+        return consultantMapper.toDto(saved);
     }
 
     private void validateEmailAndPhoneRecordsExistInDatabase(ConsultantDTO dto) {
@@ -58,7 +57,7 @@ public class ConsultantDbService {
     @Transactional
     @Cacheable (value = "consultants", key ="#id")
     public Optional<ConsultantEntity>  findById(Long id) {
-        Optional<ConsultantEntity> byId = null;
+        Optional<ConsultantEntity> byId;
         try{
             byId = consultantRepository.findById(id);
         } catch (Exception ex) {
