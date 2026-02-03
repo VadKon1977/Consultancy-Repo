@@ -43,7 +43,7 @@ public class ConsultantService implements IConsultantService{
         ConsultantDTO dto;
         if (id > 0){
             dto = consultantDbService.findById(id).map(consultantMapper::toDto)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultant id {} not found in Database"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultant not found by id " + id));
         } else {
             log.error("Id must be value greater than 0 {}", id);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id must be value greater than 0");
@@ -56,6 +56,7 @@ public class ConsultantService implements IConsultantService{
         log.info("Fetching all consultants");
         List<ConsultantEntity> allConsultants = consultantDbService.findAll();
         if (allConsultants.isEmpty()) {
+            // RecordNotFoundException
             log.error("Consultants are not found");
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultants not found");
         }

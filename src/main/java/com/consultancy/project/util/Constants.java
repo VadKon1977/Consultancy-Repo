@@ -20,4 +20,8 @@ public final class Constants {
     public static final String PHONE_REGEX = "^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$";
 
     public static final String TRACE_ID_KEY = "TRACE_ID";
+
+    public static final String REQUEST_TIME = "REQUEST_TIME";
+
+    public static final String RECORD_EXISTS = "RECORD EXISTS";
 }

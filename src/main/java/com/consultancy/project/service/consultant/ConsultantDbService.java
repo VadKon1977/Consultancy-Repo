@@ -2,6 +2,8 @@ package com.consultancy.project.service.consultant;
 
 import com.consultancy.project.DTO.ConsultantDTO;
 import com.consultancy.project.DAO.ConsultantEntity;
+import com.consultancy.project.exceptions.DatabaseErrorException;
+import com.consultancy.project.exceptions.RecordExistsException;
 import com.consultancy.project.repository.ConsultantRepository;
 import com.consultancy.project.util.Constants;
 import com.consultancy.project.util.ConsultantMapper;
@@ -32,23 +34,23 @@ public class ConsultantDbService implements IConsultantDbService {
     @Transactional
     public ConsultantDTO save(ConsultantDTO dto) {
         ConsultantEntity saved;
-        log.info("Saving New Consultant Data {} at {}",jsonUtility.writeToJson(dto, Constants.SAVE_CONSULTANT) , LocalDateTime.now());
+        log.info("[TracingId {}] Saving New Consultant Data {} at {}",MDC.get(Constants.TRACE_ID_KEY), jsonUtility.writeToJson(dto, Constants.SAVE_CONSULTANT) , MDC.get(Constants.REQUEST_TIME));
         validateEmailAndPhoneRecordsExistInDatabase(dto);
         try {
             saved = consultantRepository.save(consultantMapper.toEntity(dto));
         } catch (Exception ex){
-            log.error("Error saving New Consultant Data {} at {}",jsonUtility.writeToJson(dto, Constants.SAVE_CONSULTANT), LocalDateTime.now());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error", ex);
+            log.error("[TracingId {}] Error saving New Consultant Data {} at {}", MDC.get(Constants.TRACE_ID_KEY),jsonUtility.writeToJson(dto, Constants.SAVE_CONSULTANT), MDC.get(Constants.REQUEST_TIME));
+            throw new DatabaseErrorException(ex.getMessage(), "Database error when saving consultant", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return consultantMapper.toDto(saved);
     }
 
     private void validateEmailAndPhoneRecordsExistInDatabase(ConsultantDTO dto) {
         if (consultantRepository.existsByPhone(dto.getPhone())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Record with email " + dto.getEmail() + " already exists");
+            throw new RecordExistsException("Record with email " + dto.getPhone() + " already exists", HttpStatus.CONFLICT.value(), Constants.RECORD_EXISTS);
         }
         if (consultantRepository.existsByEmail(dto.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Record with phone " + dto.getPhone() + " already exists");
+            throw new RecordExistsException("Record with phone " + dto.getEmail() + " already exists", HttpStatus.CONFLICT.value(), Constants.RECORD_EXISTS);
         }
     }
 
@@ -56,12 +58,13 @@ public class ConsultantDbService implements IConsultantDbService {
     @Transactional
     @Cacheable (value = "consultants", key ="#id")
     public Optional<ConsultantEntity>  findById(Long id) {
+        log.info("[TracingId {}] Retrieving Consultants by id {} at {} ", MDC.get(Constants.TRACE_ID_KEY), id, MDC.get(Constants.REQUEST_TIME));
         Optional<ConsultantEntity> byId;
         try{
             byId = consultantRepository.findById(id);
         } catch (Exception ex) {
-            log.error("Database error when retrieving consultant by Id {}", id);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error", ex);
+            log.error("[TracingId {}] Database error when retrieving consultant by Id {} at {}", id, MDC.get(Constants.TRACE_ID_KEY), MDC.get(Constants.REQUEST_TIME));
+            throw new DatabaseErrorException(ex.getMessage(), "Database error when getting consultant by id", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return byId;
     }
@@ -69,13 +72,13 @@ public class ConsultantDbService implements IConsultantDbService {
     @Override
     @Transactional
     public List<ConsultantEntity> findAll() {
-        log.info("[TracingId {}] Retrieving All Consultants at ", MDC.get(Constants.TRACE_ID_KEY));
+        log.info("[TracingId {}] Retrieving All Consultants at {} ", MDC.get(Constants.TRACE_ID_KEY), MDC.get(Constants.REQUEST_TIME));
         List<ConsultantEntity> all;
         try {
             all = consultantRepository.findAll();
         } catch (Exception ex) {
-            log.error("Database error when retrieving consultant by Id");
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error", ex);
+            log.error("[TracingId {}] Database error when retrieving consultant by Id at {}", MDC.get(Constants.TRACE_ID_KEY), MDC.get(Constants.REQUEST_TIME));
+            throw new DatabaseErrorException(ex.getMessage(), "Database error when getting a list of all consultants", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return all;
     }
