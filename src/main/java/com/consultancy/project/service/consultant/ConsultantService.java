@@ -2,12 +2,10 @@ package com.consultancy.project.service.consultant;
 
 import com.consultancy.project.DAO.ConsultantEntity;
 import com.consultancy.project.DTO.ConsultantDTO;
-import com.consultancy.project.util.Constants;
 import com.consultancy.project.util.ConsultantMapper;
 import com.consultancy.project.util.PayloadValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -56,7 +54,6 @@ public class ConsultantService implements IConsultantService{
         log.info("Fetching all consultants");
         List<ConsultantEntity> allConsultants = consultantDbService.findAll();
         if (allConsultants.isEmpty()) {
-            // RecordNotFoundException
             log.error("Consultants are not found");
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultants not found");
         }
