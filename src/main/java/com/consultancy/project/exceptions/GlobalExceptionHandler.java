@@ -32,6 +32,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, ex.getStatusCode());
     }
 
+    @ExceptionHandler(ConsultantNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleConsultantNotFoundException(ConsultantNotFoundException ex) {
+        ErrorResponse errorResponse = errorResponse(ex.getMessage(), ex.getException(), ex.getStatus());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
     private ErrorResponse errorResponse(String message, String reason, int status){
         return ErrorResponse.builder()
                 .message(message)

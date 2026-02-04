@@ -2,17 +2,20 @@ package com.consultancy.project.service.consultant;
 
 import com.consultancy.project.DAO.ConsultantEntity;
 import com.consultancy.project.DTO.ConsultantDTO;
+import com.consultancy.project.exceptions.ConsultantNotFoundException;
+import com.consultancy.project.util.Constants;
 import com.consultancy.project.util.ConsultantMapper;
 import com.consultancy.project.util.PayloadValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Objects;
-
+import java.util.Optional;
 
 
 @Service
@@ -37,16 +40,12 @@ public class ConsultantService implements IConsultantService{
     }
 
     @Override
-    public ConsultantDTO findById(Long id) {
-        ConsultantDTO dto;
-        if (id > 0){
-            dto = consultantDbService.findById(id).map(consultantMapper::toDto)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultant not found by id " + id));
-        } else {
-            log.error("Id must be value greater than 0 {}", id);
+    public ConsultantEntity findById(Long id) {
+        if (id <= 0){
+            log.error("[TracingId:{}] Id must be value greater than 0 {} at {}", MDC.get(Constants.TRACE_ID_KEY), id, MDC.get(Constants.REQUEST_TIME));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id must be value greater than 0");
         }
-        return dto;
+        return consultantDbService.findById(id).orElseThrow(() -> new ConsultantNotFoundException("Consultant not found for id " + id, "Database Error", HttpStatus.NOT_FOUND.value()));
     }
 
     @Override
@@ -71,8 +70,17 @@ public class ConsultantService implements IConsultantService{
     }
 
     @Override
-    public ConsultantDTO update(Long id, ConsultantDTO consultantDTO) {
-        return null;
+    public ConsultantDTO update(Long id, ConsultantDTO dto) {
+        log.info("[TracingId {}] Update Consultant by id {} at {}", MDC.get(Constants.TRACE_ID_KEY), id, MDC.get(Constants.REQUEST_TIME));
+        ConsultantDTO updatedConsultant = null;
+        if (payloadValidator.consultantValidator(dto)) {
+            updatedConsultant = consultantDbService.update(dto, findById(id));
+            if (Objects.isNull(updatedConsultant)) {
+                log.error("[TracingId {}] Error Updating Consultant with id {} at {}", MDC.get(Constants.TRACE_ID_KEY), id, MDC.get(Constants.REQUEST_TIME));
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Consultant has not been updated ");
+            }
+        }
+        return updatedConsultant;
     }
 
     @Override

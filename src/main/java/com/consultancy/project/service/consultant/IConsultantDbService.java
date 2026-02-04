@@ -10,4 +10,5 @@ public interface IConsultantDbService {
     ConsultantDTO save(ConsultantDTO dto);
     Optional<ConsultantEntity> findById(Long id);
     List<ConsultantEntity> findAll();
+    ConsultantDTO update(ConsultantDTO dto, ConsultantEntity consultantEntity);
 }
