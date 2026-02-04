@@ -1,8 +1,10 @@
 package com.consultancy.project.controller;
 
+import com.consultancy.project.exceptions.DatabaseErrorException;
 import com.consultancy.project.service.consultant.ConsultantService;
 import com.consultancy.project.DTO.ConsultantDTO;
 import com.consultancy.project.util.Constants;
+import com.consultancy.project.util.ConsultantMapper;
 import com.consultancy.project.util.JsonUtility;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class ConsultantController {
 
     private final ConsultantService consultantService;
     private final JsonUtility jsonUtility;
+    private final ConsultantMapper consultantMapper;
 
     @PostMapping("/consultants")
     public ResponseEntity<ConsultantDTO> create(@Valid @RequestBody ConsultantDTO dto) {
@@ -36,8 +39,16 @@ public class ConsultantController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ConsultantDTO> getConsultantById(@PathVariable Long id) {
+        ConsultantDTO dto;
         log.info("Find consultant by id {} endpoint hit", id);
-        return ResponseEntity.ok(consultantService.findById(id));
+        try {
+            dto = consultantMapper.toDto(consultantService.findById(id));
+        } catch (Exception ex){
+            log.error("[TracingId:{}] Data Transformation Error for Id {} at {}", MDC.get(Constants.TRACE_ID_KEY), id, MDC.get(Constants.REQUEST_TIME));
+            throw new DatabaseErrorException("Data Transformation Error", "MAPPER ERROR", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        log.info("[TracingId:{}] Consultant Successfully Retrieved by Id {} at {}", MDC.get(Constants.TRACE_ID_KEY), id, MDC.get(Constants.REQUEST_TIME));
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/get/all")
@@ -52,6 +63,7 @@ public class ConsultantController {
     public ResponseEntity<ConsultantDTO> update(@PathVariable Long id, @Valid @RequestBody ConsultantDTO consultantDTO) {
         log.info("Consultant full update endpoint has been hit with consultant id {} and body {}"
                 , id, jsonUtility.writeToJson(consultantDTO, Constants.UPDATE));
+        log.info("[TracingId:{}] Consultant Data is Successfully Updated Id {} at {}", MDC.get(Constants.TRACE_ID_KEY), id, MDC.get(Constants.REQUEST_TIME));
         return ResponseEntity.ok(consultantService.update(id, consultantDTO));
     }
 
